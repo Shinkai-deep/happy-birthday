@@ -241,7 +241,13 @@
     requestAnimationFrame(animate);
 
     addEventListener('resize',()=>{
-      camera.aspect=innerWidth/innerHeight;camera.updateProjectionMatrix();renderer.setPixelRatio(Math.min(devicePixelRatio,1.7));renderer.setSize(innerWidth,innerHeight);composer.setSize(innerWidth,innerHeight);pointMat.uniforms.uPixel.value=renderer.getPixelRatio();
+      camera.aspect=innerWidth/innerHeight;
+      camera.updateProjectionMatrix();
+      layoutCamera();
+      renderer.setPixelRatio(Math.min(devicePixelRatio,1.7));
+      renderer.setSize(innerWidth,innerHeight);
+      composer.setSize(innerWidth,innerHeight);
+      pointMat.uniforms.uPixel.value=renderer.getPixelRatio();
     });
   </script>
 </body>
