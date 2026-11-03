@@ -177,7 +177,7 @@
         }`,
       fragmentShader:`
         varying vec3 vColor; varying float vAlpha,vSeed;
-        void main(){vec2 p=gl_PointCoord-.5; float circle=length(p); float diamond=(abs(p.x)+abs(p.y))*.72; float square=max(abs(p.x),abs(p.y))*.94; float d=vSeed<.45?circle:(vSeed<.76?diamond:square); if(d>.5)discard; float mask=smoothstep(.5,.41,d); float core=pow(max(0.,1.-d*1.72),2.); gl_FragColor=vec4(vColor*(.92+core*.10),vAlpha*mask*.90);}`,
+        void main(){vec2 p=gl_PointCoord-.5; float d=length(p); if(d>.5)discard; float mask=smoothstep(.5,.41,d); float core=pow(max(0.,1.-d*1.72),2.); gl_FragColor=vec4(vColor*(.92+core*.10),vAlpha*mask*.90);}`,
       transparent:true,depthWrite:false,blending:THREE.NormalBlending,vertexColors:true
     });
     cake.add(new THREE.Points(geom,pointMat));
