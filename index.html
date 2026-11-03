@@ -86,27 +86,27 @@
     const positions = [], origins = [], colors = [], sizes = [], seeds = [];
     const rand = (a,b) => a + Math.random() * (b-a);
     function pushParticle(x,y,z, emphasis=0, colorBias=null, colorBias2=null, blendT=0, sizeScale=1) {
-        positions.push(x,y,z);
-        const theta = Math.random()*Math.PI*2, rad = rand(7.5,15), oy=rand(-6,7);
-        origins.push(Math.cos(theta)*rad, oy, Math.sin(theta)*rad);
-        const c1 = colorBias || palette[1];
-        const c2 = colorBias2 || c1;
-        const t = Math.min(1, Math.max(0, blendT + rand(-.12,.12)));
-        const base = c1.clone().lerp(c2, t);
-        const jitter = rand(.80,.96);
-        const tint = rand(-.05,.05);
-        colors.push(
-            Math.min(1, Math.max(0, base.r*jitter + tint)),
-            Math.min(1, Math.max(0, base.g*jitter + tint)),
-            Math.min(1, Math.max(0, base.b*jitter + tint))
-        );
-        const crystal=Math.random()<.105?rand(3.0,5.15):rand(.78,2.18);
-        sizes.push((crystal + emphasis)*sizeScale); seeds.push(Math.random());
+      positions.push(x,y,z);
+      const theta = Math.random()*Math.PI*2, rad = rand(7.5,15), oy=rand(-6,7);
+      origins.push(Math.cos(theta)*rad, oy, Math.sin(theta)*rad);
+      const c1 = colorBias || palette[1];
+      const c2 = colorBias2 || c1;
+      const t = Math.min(1, Math.max(0, blendT + rand(-.12,.12)));
+      const base = c1.clone().lerp(c2, t);
+      const jitter = rand(.80,.96);
+      const tint = rand(-.05,.05);
+      colors.push(
+        Math.min(1, Math.max(0, base.r*jitter + tint)),
+        Math.min(1, Math.max(0, base.g*jitter + tint)),
+        Math.min(1, Math.max(0, base.b*jitter + tint))
+      );
+      const crystal=Math.random()<.105?rand(3.0,5.15):rand(.78,2.18);
+      sizes.push((crystal + emphasis)*sizeScale); seeds.push(Math.random());
     }
 
     function tier(radius, height, cy, count, sizeScale, colorBottom, colorTop) {
-        for(let i=0;i<count;i++){
-            const face=Math.random(), a=Math.random()*Math.PI*2; let r,y,emphasis=0;
+      for(let i=0;i<count;i++){
+        const face=Math.random(), a=Math.random()*Math.PI*2; let r,y,emphasis=0;
         if(face<.52){
           r=radius+rand(-.038,.042);
           y=cy+rand(-height/2,height/2);
@@ -122,18 +122,22 @@
           r=radius*Math.sqrt(Math.random());
           y=cy+rand(-height*.48,height*.48);
         }
-        // 按粒子在本层内的高度，在上下两色间混合
         const localT = (y - (cy - height/2)) / height;
         pushParticle(Math.cos(a)*r,y,Math.sin(a)*r,emphasis,colorBottom,colorTop,localT,sizeScale);
       }
-        const rimCount=Math.floor(count*.22);
-        for(let i=0;i<rimCount;i++){
-            const a=Math.random()*Math.PI*2;
-            const r=radius+rand(-.10,.14);
-            const y=cy+(Math.random()>.5?1:-1)*(height*.5)+rand(-.10,.10);
-            const localT = (y - (cy - height/2)) / height;
-            pushParticle(Math.cos(a)*r,y,Math.sin(a)*r,.55,colorBottom,colorTop,localT,sizeScale*1.08);
+      const rimCount=Math.floor(count*.22);
+      const white = new THREE.Color('#ffffff');
+      for(let i=0;i<rimCount;i++){
+        const a=Math.random()*Math.PI*2;
+        const r=radius+rand(-.10,.14);
+        const y=cy+(Math.random()>.5?1:-1)*(height*.5)+rand(-.10,.10);
+        const localT = (y - (cy - height/2)) / height;
+        if (Math.random() < 0.15) {
+          pushParticle(Math.cos(a)*r, y, Math.sin(a)*r, .75, white, white, 0, sizeScale * 1.18);
+        } else {
+          pushParticle(Math.cos(a)*r, y, Math.sin(a)*r, .55, colorBottom, colorTop, localT, sizeScale * 1.08);
         }
+      }
       const waistCount=Math.floor(count*.08);
       for(let i=0;i<waistCount;i++){
         const a=Math.random()*Math.PI*2;
@@ -143,9 +147,9 @@
         pushParticle(Math.cos(a)*r,y,Math.sin(a)*r,.45,colorBottom,colorTop,localT,sizeScale*1.05);
       }
     }
-    tier(3.20,1.34,-1.28,15000,1.16,palette[0],palette[1]);  // 底层深蓝
-    tier(2.28,1.36,.17,11500,1.00,palette[1],palette[3]);    // 中层青蓝
-    tier(1.46,1.34,1.62,8500,.84,palette[3],palette[4]);     // 顶层粉
+    tier(3.20,1.34,-1.28,15000,1.16,palette[0],palette[1]);
+    tier(2.28,1.36,.17,11500,1.00,palette[1],palette[3]);
+    tier(1.46,1.34,1.62,8500,.84,palette[3],palette[4]);
 
     const coreMat=new THREE.MeshBasicMaterial({color:0x173d69,transparent:true,opacity:.14,depthWrite:false});
     [[2.98,1.24,-1.28],[2.10,1.25,.17],[1.34,1.23,1.62]].forEach(([r,h,y])=>{const m=new THREE.Mesh(new THREE.CylinderGeometry(r,r,h,64),coreMat);m.position.y=y;cake.add(m);});
