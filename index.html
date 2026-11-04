@@ -70,8 +70,17 @@
     const bgTexture=new THREE.CanvasTexture(bgCanvas);bgTexture.colorSpace=THREE.SRGBColorSpace;scene.background=bgTexture;
     scene.fog = new THREE.FogExp2(0x02040d, .028);
     const camera = new THREE.PerspectiveCamera(38, innerWidth / innerHeight, .1, 100);
-    camera.position.set(3.35, 3.1, 14.6);
-    camera.lookAt(0, -.25, 0);
+    function layoutCamera() {
+      const portrait = innerWidth / innerHeight < 1.1;
+      if (portrait) {
+        camera.position.set(0, 2.2, 16.5);
+        camera.lookAt(0, -0.3, 0);
+      } else {
+        camera.position.set(3.35, 3.1, 14.6);
+        camera.lookAt(0, -.25, 0);
+      }
+    }
+    layoutCamera();
 
     const composer = new EffectComposer(renderer);
     composer.addPass(new RenderPass(scene, camera));
@@ -86,31 +95,31 @@
     const positions = [], origins = [], colors = [], sizes = [], seeds = [];
     const rand = (a,b) => a + Math.random() * (b-a);
     function pushParticle(x,y,z, emphasis=0, colorBias=null, colorBias2=null, blendT=0, sizeScale=1) {
-      positions.push(x,y,z);
-      const theta = Math.random()*Math.PI*2, rad = rand(7.5,15), oy=rand(-6,7);
-      origins.push(Math.cos(theta)*rad, oy, Math.sin(theta)*rad);
-      const c1 = colorBias || palette[1];
-      const c2 = colorBias2 || c1;
-      const t = Math.min(1, Math.max(0, blendT + rand(-.12,.12)));
-      const base = c1.clone().lerp(c2, t);
-      const jitter = rand(.80,.96);
-      const tint = rand(-.05,.05);
-      colors.push(
-        Math.min(1, Math.max(0, base.r*jitter + tint)),
-        Math.min(1, Math.max(0, base.g*jitter + tint)),
-        Math.min(1, Math.max(0, base.b*jitter + tint))
-      );
-      const crystal=Math.random()<.105?rand(3.0,5.15):rand(.78,2.18);
-      sizes.push((crystal + emphasis)*sizeScale); seeds.push(Math.random());
+        positions.push(x,y,z);
+        const theta = Math.random()*Math.PI*2, rad = rand(7.5,15), oy=rand(-6,7);
+        origins.push(Math.cos(theta)*rad, oy, Math.sin(theta)*rad);
+        const c1 = colorBias || palette[1];
+        const c2 = colorBias2 || c1;
+        const t = Math.min(1, Math.max(0, blendT + rand(-.12,.12)));
+        const base = c1.clone().lerp(c2, t);
+        const jitter = rand(.80,.96);
+        const tint = rand(-.05,.05);
+        colors.push(
+            Math.min(1, Math.max(0, base.r*jitter + tint)),
+            Math.min(1, Math.max(0, base.g*jitter + tint)),
+            Math.min(1, Math.max(0, base.b*jitter + tint))
+        );
+        const crystal=Math.random()<.105?rand(3.0,5.15):rand(.78,2.18);
+        sizes.push((crystal + emphasis)*sizeScale); seeds.push(Math.random());
     }
 
     function tier(radius, height, cy, count, sizeScale, colorBottom, colorTop) {
       for(let i=0;i<count;i++){
         const face=Math.random(), a=Math.random()*Math.PI*2; let r,y,emphasis=0;
         if(face<.52){
-          r=radius+rand(-.038,.042);
-          y=cy+rand(-height/2,height/2);
-          emphasis=0.08;
+            r=radius+rand(-.038,.042);
+            y=cy+rand(-height/2,height/2);
+            emphasis=0.08;
         }
         else if(face<.76){
           const edgeBias=Math.random()>.35;
@@ -185,6 +194,7 @@
     // A fully particle-built five-point star replaces the candle.
     const star=new THREE.Group(); star.position.y=2.68; cake.add(star);
     const sp=[],sc=[];
+    const starGold = new THREE.Color('#ffd54a');
     for(let i=0;i<1450;i++){
       const a=Math.random()*Math.PI*2-Math.PI/2;
       const seg=(a+Math.PI/2+Math.PI*2)%(Math.PI*2)/(Math.PI/5);
@@ -192,12 +202,13 @@
       const r0=even?.52:.23, r1=even?.23:.52;
       const edge=r0+(r1-r0)*f, r=Math.sqrt(Math.random())*edge;
       sp.push(Math.cos(a)*r,Math.sin(a)*r,rand(-.12,.12));
-      const c=Math.random()<.58?palette[1]:Math.random()<.72?palette[3]:palette[4];sc.push(c.r,c.g,c.b);
+      const jitter = 0.85 + Math.random()*0.15;
+      sc.push(starGold.r*jitter, starGold.g*jitter, starGold.b*jitter);
     }
     const sGeo=new THREE.BufferGeometry();sGeo.setAttribute('position',new THREE.Float32BufferAttribute(sp,3));sGeo.setAttribute('color',new THREE.Float32BufferAttribute(sc,3));
     const sMat=new THREE.PointsMaterial({size:.052,transparent:true,opacity:.88,vertexColors:true,depthWrite:false,blending:THREE.AdditiveBlending,sizeAttenuation:true});
     star.add(new THREE.Points(sGeo,sMat));
-    const glow=new THREE.PointLight(0x79ddff,1.05,4,2);star.add(glow);
+    const glow=new THREE.PointLight(0xffcc44,1.05,4,2);star.add(glow);
 
     // Sparse deep-space field with real parallax.
     function starField(count, spread, size, opacity){
@@ -230,7 +241,13 @@
       star.rotation.y=-cake.rotation.y;
       const baseScale=innerWidth/innerHeight<1.1?.82:1.;
       cake.scale.setScalar(baseScale*(1+Math.sin(t*.35)*.016));
-      camera.position.z=15.2+Math.sin(t*.23)*.25;
+      const portrait = innerWidth / innerHeight < 1.1;
+      const baseZ = portrait ? 16.5 : 15.2;
+      camera.position.z = baseZ + Math.sin(t*.23)*.25;
+      if (portrait) {
+        camera.position.x = 0;
+        camera.lookAt(0, -0.3, 0);
+      }
       farStars.rotation.y=t*.0015; nearDust.rotation.y=-t*.003;
       nearDust.position.y=Math.sin(t*.1)*.18;
       cakeDust.rotation.y=-t*.018; cakeDust.position.y=-.55+Math.sin(t*.28)*.12;
